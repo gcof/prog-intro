@@ -1,10 +1,12 @@
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.io.*;
+import java.util.Collections;
 
-public class WordStatInput {
+public class WordStatWordsMiddle {
     static final int BUFFER_SIZE = 2048;
     static final int SUFFIX_SIZE = 3;
+
     public static void main(String[] args) {
         if (args == null || args.length != 2) {
             System.err.println("Expected two files");
@@ -32,7 +34,7 @@ public class WordStatInput {
             } finally {
                 writer.close();
             }
-        } catch (IOException e){
+        } catch (IOException e) {
             System.err.println("Error while writing file: " + e.getMessage());
             return;
         }
@@ -47,23 +49,16 @@ public class WordStatInput {
     }
 
     private static String wordToSort(String word) {
+        if (word.length() > SUFFIX_SIZE * 2) {
+            return word.substring(SUFFIX_SIZE, word.length() - SUFFIX_SIZE);
+        }
         return word;
     }
 
     private static Map<String, Integer> readWord(MyScanner reader) throws IOException {
-        int x;
-        StringBuilder word = new StringBuilder();
-        Map<String, Integer> statistics = new LinkedHashMap<String, Integer>();
-        while((x = reader.readChar()) != -1) {
-            if (isOurLetter(Character.valueOf((char)x))) {
-                word.append((char)x);
-            } else if (!word.isEmpty()) {
-                addToMap(wordToSort((word.toString()).toLowerCase()), statistics);
-                word.setLength(0);
-            }
-        }
-        if (!word.isEmpty()) {
-            addToMap(wordToSort((word.toString()).toLowerCase()), statistics);
+        Map<String, Integer> statistics = new TreeMap<String, Integer>(Collections.reverseOrder());
+        while (reader.hasNext()) {
+            addToMap(wordToSort(reader.next().toLowerCase()), statistics);
         }
         return statistics;
     }
