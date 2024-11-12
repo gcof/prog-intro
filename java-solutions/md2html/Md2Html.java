@@ -6,18 +6,21 @@ import java.util.Arrays;
 import java.util.Stack;
 
 public class Md2Html {
-    private static final String htmlcode[] = { "strong", "strong", "code", "em", "em", "s", "ins", "del" };
-    private static final String[] mdcode = { "**", "__", "`", "*", "_", "--", "<<", "}}" };
-    private static final String[] mdcodeReversed = { "**", "__", "`", "*", "_", "--", ">>", "{{" };
-    private static final String fixcode[] = { "*", "_" };
-    private static final String htmlFixcode[] = { "em", "em" };
-    private static final char repcode[] = { '<', '>', '&' };
-    private static final String tocode[] = { "&lt;", "&gt;", "&amp;" };
+// :NOTE: same
+    private static final String[] htmlcode = {"strong", "strong", "code", "em", "em", "s", "ins", "del"};
+    private static final String[] mdcode = {"**", "__", "`", "*", "_", "--", "<<", "}}"};
+    private static final String[] mdcodeReversed = {"**", "__", "`", "*", "_", "--", ">>", "{{"};
+    private static final String[] fixcode = {"*", "_"};
+    private static final String[] htmlFixcode = {"em", "em"};
+
+    // :NOTE: Map<Char, String> = Map.of()
+    private static final char[] repcode = {'<', '>', '&'};
+    private static final String[] tocode = {"&lt;", "&gt;", "&amp;"};
 
     private static String parseOneParagraph(String ourParagraph) {
-        String[] ourHeaders = { "# ", "## ", "### ", "#### ", "##### ", "###### " };
+        String[] ourHeaders = {"# ", "## ", "### ", "#### ", "##### ", "###### "};
         StringBuilder result = new StringBuilder();
-        Stack<String> stack = new Stack<>();
+        Stack<String> stack = new Stack<>(); // :NOTE: ArrayDeque
         int[] lastFixCode = new int[fixcode.length];
         Arrays.fill(lastFixCode, -1);
         boolean isHeader = false;
@@ -35,6 +38,7 @@ public class Md2Html {
             stack.push("p");
             result.append("<p>");
         }
+
         boolean smthDid = false;
         for (; nowParsing < ourParagraph.length(); nowParsing++) {
             smthDid = false;
@@ -106,16 +110,15 @@ public class Md2Html {
             return "";
         }
         if (!result.isEmpty()) {
-            result.append('\n');
+            result.append('\n'); // :NOTE:
         }
         return result.toString();
     }
 
     private static String parseMd2Html(String fileName) {
-        BufferedReader reader = null;
         StringBuilder ourResult = new StringBuilder();
-        try {
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), StandardCharsets.UTF_8));
+        try (BufferedReader reader =
+                     new BufferedReader(new InputStreamReader(new FileInputStream(fileName), StandardCharsets.UTF_8))) {
             StringBuilder ourParagraph = new StringBuilder();
             String line = reader.readLine();
             while (line != null) {
@@ -144,17 +147,22 @@ public class Md2Html {
         } catch (IOException e) {
             System.err.println("Error reading file: " + fileName);
             return "";
-        } finally {
-            try {
-                reader.close();
-            } catch (IOException e) {
-                System.err.println("Error closing file: " + fileName);
-            }
         }
+
         return ourResult.toString();
     }
 
     private static void writeToFile(String html, String fileName) {
+
+//        try {
+//            var resource  = OpenResource;
+//            try {
+//                resource.use
+//            } finally {
+//                resource.close()
+//            }
+//        }
+
         BufferedWriter writer = null;
         try {
             writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), StandardCharsets.UTF_8));
@@ -165,7 +173,7 @@ public class Md2Html {
             System.err.println("Error writing to file: " + fileName);
         } finally {
             try {
-                writer.close();
+                writer.close(); // :NOTE: same
             } catch (IOException e) {
                 System.err.println("Error closing file: " + fileName);
             }
