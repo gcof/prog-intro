@@ -1,7 +1,5 @@
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
-import java.util.TreeMap;
 
 public class M {
 
@@ -29,5 +27,6 @@ public class M {
         for (int i = 0; i < t; i++) {
             solve(scanner);
         }
+        scanner.close();
     }
 }

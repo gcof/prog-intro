@@ -23,5 +23,6 @@ public class I {
         int x = (xl + xr) / 2;
         int y = (yl + yr) / 2;
         System.out.println(x + " " + y + " " + h);
+        scanner.close();
     }
 }

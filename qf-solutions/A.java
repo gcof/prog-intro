@@ -8,5 +8,6 @@ public class A {
         b = scanner.nextInt();
         n = scanner.nextInt();
         System.out.println(2 * ((n - b + b - a - 1) / (b - a)) + 1);
+        scanner.close();
     }
 }

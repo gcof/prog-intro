@@ -5,13 +5,13 @@ public class J {
         Scanner scanner = new Scanner(System.in);
         int n;
         n = scanner.nextInt();
+        scanner.nextLine();
         int[][] matrix = new int[n][n];
         int[][] graph = new int[n][n];
         for (int i = 0; i < n; i++) {
-            int tmp = scanner.nextInt();
+            String toReadInput = scanner.nextLine();
             for (int j = 0; j < n; j++) {
-                matrix[i][n - 1 - j] = tmp % 10;
-                tmp /= 10;
+                matrix[i][j] = toReadInput.charAt(j) - '0';
             }
         }
 
@@ -32,5 +32,6 @@ public class J {
             }
             System.out.println();
         }
+        scanner.close();
     }
 }

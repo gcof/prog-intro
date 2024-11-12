@@ -10,5 +10,6 @@ public class B {
             System.out.println(now);
             now += 710;
         }
+        scanner.close();
     }
 }
