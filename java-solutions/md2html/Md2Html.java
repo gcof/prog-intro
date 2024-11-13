@@ -2,183 +2,200 @@ package md2html;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Stack;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 
 public class Md2Html {
-// :NOTE: same
-    private static final String[] htmlcode = {"strong", "strong", "code", "em", "em", "s", "ins", "del"};
-    private static final String[] mdcode = {"**", "__", "`", "*", "_", "--", "<<", "}}"};
-    private static final String[] mdcodeReversed = {"**", "__", "`", "*", "_", "--", ">>", "{{"};
-    private static final String[] fixcode = {"*", "_"};
-    private static final String[] htmlFixcode = {"em", "em"};
+    private static class IntWrapper {
+        public int value;
 
-    // :NOTE: Map<Char, String> = Map.of()
-    private static final char[] repcode = {'<', '>', '&'};
-    private static final String[] tocode = {"&lt;", "&gt;", "&amp;"};
+        IntWrapper(int value) {
+            this.value = value;
+        }
+    }
 
-    private static String parseOneParagraph(String ourParagraph) {
-        String[] ourHeaders = {"# ", "## ", "### ", "#### ", "##### ", "###### "};
-        StringBuilder result = new StringBuilder();
-        Stack<String> stack = new Stack<>(); // :NOTE: ArrayDeque
-        int[] lastFixCode = new int[fixcode.length];
-        Arrays.fill(lastFixCode, -1);
-        boolean isHeader = false;
-        int nowParsing = 0;
-        for (int i = 0; i < ourHeaders.length; i++) {
-            if (ourParagraph.startsWith(ourHeaders[i])) {
-                stack.push("h" + (i + 1));
-                result.append("<h").append(i + 1).append(">");
-                isHeader = true;
-                nowParsing = ourHeaders[i].length();
+    private static final LinkedHashMap<String, String> htmlMdCodeStartMap = new LinkedHashMap<>();
+    private static final Map<String, String> htmlMdCodeEndMap = Map.of(
+            "ins", ">>",
+            "del", "{{"
+    );
+    private static final Map<String, String> htmlMdFixCodeMap = Map.of(
+            "*", "em",
+            "_", "em"
+    );
+    private static final Map<Character, String> htmlMdRepCodeMap = Map.of(
+            '<', "&lt;",
+            '>', "&gt;",
+            '&', "&amp;"
+    );
+
+    private static void makeFirstInitializations() {
+        // Why not Map.of()? Cos' I need to keep the order of elements in Map.entrySet() in htmlMdCodeStartMap =)
+        htmlMdCodeStartMap.put("**", "strong");
+        htmlMdCodeStartMap.put("__", "strong");
+        htmlMdCodeStartMap.put("--", "s");
+        htmlMdCodeStartMap.put("<<", "ins");
+        htmlMdCodeStartMap.put("}}", "del");
+        htmlMdCodeStartMap.put("`", "code");
+        htmlMdCodeStartMap.put("*", "em");
+        htmlMdCodeStartMap.put("_", "em");
+    }
+
+    private static int evalLevelOfHeader(String ourParagraph) {
+        StringBuilder headerStart = new StringBuilder("#");
+        int maxStart = 0;
+        for (int i = 1; i <= 6; i++) {
+            if (ourParagraph.startsWith(headerStart.toString())) {
+                maxStart = i;
+                headerStart.append('#');
+            }
+        }
+        if (maxStart == 0 || !Character.isWhitespace(ourParagraph.charAt(maxStart))) {
+            return -1;
+        }
+        return maxStart;
+    }
+
+    private static void addHeader(StringBuilder result, ArrayDeque<String> stack, int headerLevel) {
+        if (headerLevel > 0) {
+            stack.addLast("h" + headerLevel);
+            result.append("<h").append(headerLevel).append(">");
+        } else {
+            stack.addLast("p");
+            result.append("<p>");
+        }
+    }
+
+    private static void fixSoloTags(StringBuilder result, ArrayDeque<String> stack,
+                                    Map<String, Integer> lastFixCodeInResult) {
+        while (stack.size() > 1) {
+            if (lastFixCodeInResult.containsKey(stack.peekLast())) {
+                int start = lastFixCodeInResult.get(stack.peekLast());
+                result.delete(start, start + htmlMdFixCodeMap.get(stack.peekLast()).length() + "<>".length());
+                result.insert(start, stack.peekLast());
+                stack.removeLast();
+            }
+        }
+        result.append("</").append(stack.removeLast()).append(">");
+    }
+
+    private static boolean makeScreening(StringBuilder result, String ourParagraph, IntWrapper nowParsing) {
+        if (ourParagraph.charAt(nowParsing.value) == '\\') {
+            if (nowParsing.value + 1 < ourParagraph.length() &&
+                    htmlMdRepCodeMap.containsKey(ourParagraph.charAt(nowParsing.value + 1))) {
+                result.append(htmlMdRepCodeMap.get(ourParagraph.charAt(++nowParsing.value)));
+            } else {
+                result.append(ourParagraph.charAt(++nowParsing.value));
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean tryAddHtmlTag(StringBuilder result, String ourParagraph, IntWrapper nowParsing,
+                                         ArrayDeque<String> stack, Map<String, Integer> lastFixCodeInResult) {
+        boolean somethingChanged = false;
+        for (Map.Entry<String, String> entry : htmlMdCodeStartMap.entrySet()) {
+            String mdCode = entry.getKey();
+            String mdCodeReversed = htmlMdCodeEndMap.getOrDefault(entry.getValue(), mdCode);
+            String htmlCode = entry.getValue();
+            if (ourParagraph.startsWith(mdCode, nowParsing.value)
+                    || ourParagraph.startsWith(mdCodeReversed, nowParsing.value)) {
+                if (htmlMdFixCodeMap.containsKey(mdCode)) {
+                    lastFixCodeInResult.replace(mdCode, result.length());
+                }
+                if (!stack.peekLast().equals(mdCode)) {
+                    if (ourParagraph.startsWith(mdCodeReversed, nowParsing.value)
+                            && !ourParagraph.startsWith(mdCode, nowParsing.value)) {
+                        break;
+                    } else {
+                        stack.addLast(mdCode);
+                        result.append("<").append(htmlCode).append(">");
+                    }
+                } else {
+                    stack.removeLast();
+                    result.append("</").append(htmlCode).append(">");
+                }
+                nowParsing.value += mdCode.length() - 1;
+                somethingChanged = true;
                 break;
             }
         }
-        if (!isHeader) {
-            stack.push("p");
-            result.append("<p>");
+        return somethingChanged;
+    }
+
+    private static boolean changeHtmlSpecialSymbols(StringBuilder result, String ourParagraph, IntWrapper nowParsing) {
+        if (htmlMdRepCodeMap.containsKey(ourParagraph.charAt(nowParsing.value))) {
+            result.append(htmlMdRepCodeMap.get(ourParagraph.charAt(nowParsing.value)));
+            return true;
+        }
+        return false;
+    }
+
+    private static String parseOneParagraph(String ourParagraph) {
+        StringBuilder result = new StringBuilder();
+        ArrayDeque<String> stack = new ArrayDeque<>();
+        Map<String, Integer> lastFixCodeInResult = new LinkedHashMap<>(htmlMdFixCodeMap.size());
+        lastFixCodeInResult.put("*", -1);
+        lastFixCodeInResult.put("_", -1);
+        int headerLevel = evalLevelOfHeader(ourParagraph);
+        addHeader(result, stack, headerLevel);
+
+        for (IntWrapper nowParsing = new IntWrapper(headerLevel + 1); nowParsing.value < ourParagraph.length(); nowParsing.value++) {
+            boolean somethingChanged = (makeScreening(result, ourParagraph, nowParsing)
+                    || tryAddHtmlTag(result, ourParagraph, nowParsing, stack, lastFixCodeInResult)
+                    || changeHtmlSpecialSymbols(result, ourParagraph, nowParsing));
+            if (!somethingChanged) {
+                result.append(ourParagraph.charAt(nowParsing.value));
+            }
         }
 
-        boolean smthDid = false;
-        for (; nowParsing < ourParagraph.length(); nowParsing++) {
-            smthDid = false;
-            if (ourParagraph.charAt(nowParsing) == '\\') {
-                for (int i = 0; i < repcode.length; i++) {
-                    if (nowParsing + 1 < ourParagraph.length() && ourParagraph.charAt(nowParsing + 1) == repcode[i]) {
-                        result.append(tocode[i]);
-                        nowParsing++;
-                        smthDid = true;
-                        break;
-                    }
-                }
-                if (!smthDid) {
-                    result.append(ourParagraph.charAt(++nowParsing));
-                }
-                smthDid = true;
-                continue;
-            }
-            for (int i = 0; i < mdcode.length; ++i) {
-                if (ourParagraph.startsWith(mdcode[i], nowParsing)
-                        || ourParagraph.startsWith(mdcodeReversed[i], nowParsing)) {
-                    for (int j = 0; j < fixcode.length; j++) {
-                        if (fixcode[j].equals(mdcode[i])) {
-                            lastFixCode[j] = result.length();
-                        }
-                    }
-                    if (!stack.peek().equals(mdcode[i])) {
-                        if (ourParagraph.startsWith(mdcodeReversed[i], nowParsing)
-                                && !ourParagraph.startsWith(mdcode[i], nowParsing)) {
-                            break;
-                        }
-                        stack.push(mdcode[i]);
-                        result.append("<").append(htmlcode[i]).append(">");
-                    } else {
-                        stack.pop();
-                        result.append("</").append(htmlcode[i]).append(">");
-                    }
-                    nowParsing += mdcode[i].length() - 1;
-                    smthDid = true;
-                    break;
-                }
-            }
-            for (int i = 0; i < repcode.length; i++) {
-                if (!smthDid && ourParagraph.charAt(nowParsing) == repcode[i]) {
-                    result.append(tocode[i]);
-                    smthDid = true;
-                    break;
-                }
-            }
-            if (!smthDid) {
-                result.append(ourParagraph.charAt(nowParsing));
-            }
-        }
-        while (!stack.empty()) {
-            boolean isFix = false;
-            for (int i = 0; i < fixcode.length; i++) {
-                if (stack.peek().equals(fixcode[i])) {
-                    isFix = true;
-                    result = new StringBuilder(result.substring(0, lastFixCode[i]) + fixcode[i]
-                            + result.substring(lastFixCode[i] + htmlFixcode[i].length() + 2));
-                    stack.pop();
-                }
-            }
-            if (!isFix) {
-                result.append("</").append(stack.pop()).append(">");
-            }
-        }
+        fixSoloTags(result, stack, lastFixCodeInResult);
+
         if (result.toString().startsWith("<p></p>")) {
             return "";
         }
         if (!result.isEmpty()) {
-            result.append('\n'); // :NOTE:
+            result.append(System.lineSeparator());
         }
         return result.toString();
     }
 
-    private static String parseMd2Html(String fileName) {
-        StringBuilder ourResult = new StringBuilder();
-        try (BufferedReader reader =
-                     new BufferedReader(new InputStreamReader(new FileInputStream(fileName), StandardCharsets.UTF_8))) {
-            StringBuilder ourParagraph = new StringBuilder();
-            String line = reader.readLine();
-            while (line != null) {
-                if (line.isEmpty()) {
-                    if (!ourParagraph.isEmpty()) {
-                        ourParagraph = new StringBuilder(
-                                ourParagraph.substring(0, ourParagraph.length() - System.lineSeparator().length()));
-                    }
-                    ourResult.append(parseOneParagraph(ourParagraph.toString()));
-                    ourParagraph = new StringBuilder();
-                } else {
-                    ourParagraph.append(line);
-                    ourParagraph.append(System.lineSeparator());
-                }
-                line = reader.readLine();
-            }
-            if (!ourParagraph.isEmpty()) {
-                ourParagraph = new StringBuilder(
-                        ourParagraph.substring(0, ourParagraph.length() - System.lineSeparator().length()));
-            }
-            ourResult.append(parseOneParagraph(ourParagraph.toString()));
-            ourParagraph = new StringBuilder();
-        } catch (FileNotFoundException e) {
-            System.err.println("File not found: " + fileName);
-            return "";
-        } catch (IOException e) {
-            System.err.println("Error reading file: " + fileName);
-            return "";
+    private static void addOneParagraphToResult(StringBuilder result, StringBuilder paragraphToAdd) {
+        if (!paragraphToAdd.isEmpty()) {
+            paragraphToAdd.setLength(paragraphToAdd.length() - System.lineSeparator().length());
         }
-
-        return ourResult.toString();
+        result.append(parseOneParagraph(paragraphToAdd.toString()));
+        paragraphToAdd.setLength(0);
     }
 
-    private static void writeToFile(String html, String fileName) {
-
-//        try {
-//            var resource  = OpenResource;
-//            try {
-//                resource.use
-//            } finally {
-//                resource.close()
-//            }
-//        }
-
-        BufferedWriter writer = null;
-        try {
-            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), StandardCharsets.UTF_8));
-            writer.write(html);
-        } catch (FileNotFoundException e) {
-            System.err.println("File not found: " + fileName);
-        } catch (IOException e) {
-            System.err.println("Error writing to file: " + fileName);
-        } finally {
-            try {
-                writer.close(); // :NOTE: same
-            } catch (IOException e) {
-                System.err.println("Error closing file: " + fileName);
+    private static String parseMd2Html(String fileName) throws IOException {
+        StringBuilder resultInHtml = new StringBuilder();
+        try (BufferedReader reader =
+                     new BufferedReader(new InputStreamReader(new FileInputStream(fileName), StandardCharsets.UTF_8))) {
+            StringBuilder buildedParagraph = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.isEmpty()) {
+                    addOneParagraphToResult(resultInHtml, buildedParagraph);
+                } else {
+                    buildedParagraph.append(line).append(System.lineSeparator());
+                }
             }
+            addOneParagraphToResult(resultInHtml, buildedParagraph);
         }
+        return resultInHtml.toString();
+    }
 
+    private static void writeToFile(String html, String fileName) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName),
+                StandardCharsets.UTF_8))) {
+            writer.write(html);
+        }
     }
 
     public static void main(String[] args) {
@@ -186,7 +203,12 @@ public class Md2Html {
             System.err.println("Needed 2 files but found " + args.length);
             return;
         }
-        String html = parseMd2Html(args[0]);
-        writeToFile(html, args[1]);
+        try {
+            makeFirstInitializations();
+            String html = parseMd2Html(args[0]);
+            writeToFile(html, args[1]);
+        } catch (IOException e) {
+            System.err.println("Error reading/writing from/to file: " + e.getMessage());
+        }
     }
 }
