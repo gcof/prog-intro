@@ -3,11 +3,8 @@ package md2html;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
-
 
 public class Md2Html {
     private static class IntWrapper {
@@ -25,7 +22,9 @@ public class Md2Html {
     );
     private static final Map<String, String> htmlMdFixCodeMap = Map.of(
             "*", "em",
-            "_", "em"
+            "_", "em",
+            "<<", "ins",
+            "}}", "del"
     );
     private static final Map<Character, String> htmlMdRepCodeMap = Map.of(
             '<', "&lt;",
@@ -70,13 +69,25 @@ public class Md2Html {
         }
     }
 
+    private static String fixHtmlSpecialInString(String toFix) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < toFix.length(); ++i) {
+            if (htmlMdRepCodeMap.containsKey(toFix.charAt(i))) {
+                result.append(htmlMdRepCodeMap.get(toFix.charAt(i)));
+            } else {
+                result.append(toFix.charAt(i));
+            }
+        }
+        return result.toString();
+    }
+
     private static void fixSoloTags(StringBuilder result, ArrayDeque<String> stack,
                                     Map<String, Integer> lastFixCodeInResult) {
         while (stack.size() > 1) {
             if (lastFixCodeInResult.containsKey(stack.peekLast())) {
                 int start = lastFixCodeInResult.get(stack.peekLast());
                 result.delete(start, start + htmlMdFixCodeMap.get(stack.peekLast()).length() + "<>".length());
-                result.insert(start, stack.peekLast());
+                result.insert(start, fixHtmlSpecialInString(stack.peekLast()));
                 stack.removeLast();
             }
         }
@@ -140,8 +151,9 @@ public class Md2Html {
         StringBuilder result = new StringBuilder();
         ArrayDeque<String> stack = new ArrayDeque<>();
         Map<String, Integer> lastFixCodeInResult = new LinkedHashMap<>(htmlMdFixCodeMap.size());
-        lastFixCodeInResult.put("*", -1);
-        lastFixCodeInResult.put("_", -1);
+        for (String key : htmlMdFixCodeMap.keySet()) {
+            lastFixCodeInResult.put(key, -1);
+        }
         int headerLevel = evalLevelOfHeader(ourParagraph);
         addHeader(result, stack, headerLevel);
 
