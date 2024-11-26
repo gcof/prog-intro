@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Main {
     private static void makeTicTacToeGame() {
-        final Game game = new Game(false, new HumanPlayer("KGeorgiy"), new HumanPlayer("BArtem"));
+        final Game game = new Game(false, new HumanPlayer("KGeorgiy"), new CheaterPlayer());
         int result;
         do {
             TicTacToeBoard board = new TicTacToeBoard();
@@ -46,7 +46,7 @@ public class Main {
     public static void main(String[] args) {
 //        makeTicTacToeGame();
 //        makeMNKGame();
-//        makeRhombusGame();
-        makeTournament();
+        makeRhombusGame();
+//        makeTournament();
     }
 }
