@@ -44,6 +44,10 @@ public class Md2Html {
         htmlMdCodeStartMap.put("_", "em");
     }
 
+    static {
+        makeFirstInitializations();
+    }
+
     private static int evalLevelOfHeader(String ourParagraph) {
         StringBuilder headerStart = new StringBuilder("#");
         int maxStart = 0;
@@ -216,7 +220,6 @@ public class Md2Html {
             return;
         }
         try {
-            makeFirstInitializations();
             String html = parseMd2Html(args[0]);
             writeToFile(html, args[1]);
         } catch (IOException e) {
