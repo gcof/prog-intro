@@ -42,6 +42,7 @@ public class SwissTournament {
                 } else {
                     playMatch(player2, player1);
                 }
+                board.clear();
             } else {
                 scores.put(players.get(i), scores.get(players.get(i)) + 1);
             }

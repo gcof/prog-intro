@@ -25,6 +25,13 @@ public class TicTacToeBoard implements Board, Position {
     }
 
     @Override
+    public void clear() {
+        for (Cell[] row : cells) {
+            Arrays.fill(row, Cell.E);
+        }
+    }
+
+    @Override
     public Position getPosition() {
         return this;
     }

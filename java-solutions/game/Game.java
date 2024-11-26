@@ -31,6 +31,9 @@ public class Game {
         final Position position = board.getPosition();
         final BoardPositionWrapper positionWrapper = new BoardPositionWrapper(position);
         Move move = player.move(positionWrapper, board.getCell(), drawOffered);
+        if (move == null) {
+            return 3 - no;
+        }
         while(true) {
             if (move.getRow() == -2 && move.getColumn() == -2) {
                 if (drawOffered) {

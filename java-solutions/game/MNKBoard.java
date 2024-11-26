@@ -21,6 +21,15 @@ public class MNKBoard implements Board, Position {
     }
 
     @Override
+    public void clear() {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                cells[i][j] = Cell.E;
+            }
+        }
+    }
+
+    @Override
     public Position getPosition() {
         return this;
     }

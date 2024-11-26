@@ -15,6 +15,19 @@ public class RhombusBoard extends MNKBoard {
     }
 
     @Override
+    public void clear() {
+        super.clear();
+        int center = getN() / 2;
+        for (int i = 0; i < getN(); i++) {
+            for (int j = 0; j < getN(); j++) {
+                if (Math.abs(i - center) + Math.abs(j - center) > center) {
+                    cells[i][j] = Cell.N;
+                }
+            }
+        }
+    }
+
+    @Override
     public boolean isValid(Move move) {
         int row = move.getRow();
         int col = move.getColumn();
