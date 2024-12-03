@@ -1,6 +1,7 @@
 package game;
 
 
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Game {
@@ -30,12 +31,20 @@ public class Game {
     private int move(final Board board, final Player player, final int no, boolean drawOffered) {
         final Position position = board.getPosition();
         final BoardPositionWrapper positionWrapper = new BoardPositionWrapper(position);
-        Move move = player.move(positionWrapper, board.getCell(), drawOffered);
-        if (move == null) {
-            return 3 - no;
-        }
+        Move move = null;
         while(true) {
-            if (move.getRow() == -2 && move.getColumn() == -2) {
+            try {
+                move = player.move(positionWrapper, board.getCell(), drawOffered);
+            } catch (Exception e) {
+                log("Player " + no + " threw an exception: " + e.getMessage());
+                System.out.println("Player " + no + " threw an exception: " + e.getMessage());
+                System.out.println(Arrays.toString(e.getStackTrace()));
+                return 3 - no;
+            }
+            if (move == null) {
+                return 3 - no;
+            }
+            if (move == Move.OFFER_DRAW) {
                 if (drawOffered) {
                     log("Player " + no + " cannot offer a draw again in the same turn");
                     return -1;
@@ -52,7 +61,7 @@ public class Game {
                 }
             }
 
-            if (move.getRow() == -1 && move.getColumn() == -1) {
+            if (move == Move.RESIGN) {
                 log("Player " + no + " resigned");
                 return 3 - no;
             }
@@ -85,8 +94,7 @@ public class Game {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Player " + opponent.getName() + " has offered a draw. Do you accept? (yes/no)");
         String response = scanner.nextLine().trim().toLowerCase();
-        scanner.close();
-        return response.equals("yes");
+        return response.equalsIgnoreCase("yes");
     }
 
     private void log(final String message) {

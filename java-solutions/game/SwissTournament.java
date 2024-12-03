@@ -8,6 +8,7 @@ public class SwissTournament {
     private final Map<Player, Integer> scores;
     private final int rounds;
     private final Random random = new Random();
+    private final Set<Map<Player, Player>> playedBefore = new HashSet<>();
 
     public SwissTournament(Board board, List<Player> players) {
         this.board = board;
@@ -33,10 +34,24 @@ public class SwissTournament {
         } else {
             players.sort((player1, player2) -> Integer.compare(scores.get(player2), scores.get(player1)));
         }
+        Set <Player> usedPlayers = new HashSet<>();
         for (int i = 0; i < players.size(); i += 2) {
-            if (i + 1 < players.size()) {
+            if(usedPlayers.contains(players.get(i))) {
+                continue;
+            }
+            usedPlayers.add(players.get(i));
+            if (usedPlayers.size() < players.size()) {
                 Player player1 = players.get(i);
                 Player player2 = players.get(i + 1);
+                for (int j = i + 1; j < players.size(); j++) {
+                    player2 = players.get(j);
+                    if (!playedBefore.contains(Map.of(player1, player2))) {
+                        playedBefore.add(Map.of(player1, player2));
+                        playedBefore.add(Map.of(player2, player1));
+                        usedPlayers.add(player2);
+                        break;
+                    }
+                }
                 if (random.nextInt() % 2 == 0) {
                     playMatch(player1, player2);
                 } else {

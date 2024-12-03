@@ -3,7 +3,8 @@ package game;
 public class RhombusBoard extends MNKBoard {
 
     public RhombusBoard(int n, int k) {
-        super(n, n, k);
+        super(2*n-1, 2*n-1 , k);
+        n = 2*n-1;
         int center = n / 2;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {

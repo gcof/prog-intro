@@ -36,7 +36,7 @@ public class HumanPlayer implements Player {
             String line = in.nextLine().trim();
 
             if (line.equals("resign")) {
-                return new Move(-1, -1, cell);
+                return Move.RESIGN;
             }
 
             if (line.equals("offer draw")) {
@@ -44,7 +44,7 @@ public class HumanPlayer implements Player {
                     out.println("You have already offered a draw this turn.");
                     continue;
                 }
-                return new Move(-2, -2, cell);
+                return Move.OFFER_DRAW;
             }
 
             Scanner lineScanner = new Scanner(line);

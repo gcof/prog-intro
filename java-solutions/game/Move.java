@@ -7,6 +7,8 @@ public final class Move {
     private final int row;
     private final int column;
     private final Cell value;
+    public static final Move OFFER_DRAW = new Move(0, 0, null);
+    public static final Move RESIGN = new Move(0, 0, null);
 
     public Move(final int row, final int column, final Cell value) {
         this.row = row;
