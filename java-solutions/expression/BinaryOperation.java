@@ -68,6 +68,7 @@ public abstract class BinaryOperation implements ExpressionNode {
         return sb.toString();
     }
 
+
     @Override
     public void toMiniString(StringBuilder sb, boolean inBrackets) {
         if (inBrackets) {
