@@ -1,7 +1,5 @@
 package expression;
 
-import expression.common.Op;
-
 import java.util.Map;
 
 public class Const implements ExpressionNode, Operand {
