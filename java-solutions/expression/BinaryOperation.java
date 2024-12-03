@@ -41,15 +41,8 @@ public abstract class BinaryOperation implements ExpressionNode {
 
     @Override
     public int hashCode() {
-        int leftHash = 0;
-        int rightHash = 0;
-        if (left != null) {
-            leftHash = left.hashCode();
-        }
-        if (right != null) {
-            rightHash = right.hashCode();
-        }
-        return (((this.getClass().hashCode() * HASH_CONST) + leftHash) * HASH_CONST + rightHash) * HASH_CONST;
+        return (((this.getClass().hashCode() * HASH_CONST) + left.hashCode()) * HASH_CONST + right.hashCode())
+                * HASH_CONST;
     }
 
     @Override

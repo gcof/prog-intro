@@ -3,7 +3,7 @@ package expression;
 import java.util.Map;
 
 public class Const implements ExpressionNode, Operand {
-    private final Number value;
+    private final Number value; // :NOTE: не эффективно
 
     public Const(int value) {
         this.value = value;
@@ -24,7 +24,7 @@ public class Const implements ExpressionNode, Operand {
     }
 
     @Override
-    public float evaluateF(Map<String,Float> x) {
+    public float evaluateF(Map<String, Float> x) {
         return value.floatValue();
     }
 
