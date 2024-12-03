@@ -29,7 +29,7 @@ public class WordStatWordsMiddle {
             BufferedWriter writer = new BufferedWriter(new FileWriter(args[1]), BUFFER_SIZE);
             try {
                 for (Map.Entry<String, Integer> entry : mp.entrySet()) {
-                    writer.write(entry.getKey() + " " + entry.getValue() + "\n");
+                    writer.write(entry.getKey() + " " + entry.getValue() + System.lineSeparator());
                 }
             } finally {
                 writer.close();

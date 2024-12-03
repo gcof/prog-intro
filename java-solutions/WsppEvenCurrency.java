@@ -52,6 +52,7 @@ public class WsppEvenCurrency {
                             writer.write(" " + enterings);
                         }
                     }
+                    writer.write(System.lineSeparator());
                 }
             } finally {
                 writer.close();
