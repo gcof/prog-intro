@@ -44,6 +44,11 @@ public class Variable implements ExpressionNode, Operand {
     }
 
     @Override
+    public void toString(StringBuilder sb) {
+        sb.append(name);
+    }
+
+    @Override
     public String toMiniString() {
         return name;
     }

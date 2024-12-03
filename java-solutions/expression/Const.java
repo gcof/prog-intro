@@ -47,6 +47,11 @@ public class Const implements ExpressionNode, Operand {
     }
 
     @Override
+    public void toString(StringBuilder sb) {
+        sb.append(this);
+    }
+
+    @Override
     public String toMiniString() {
         return this.toString();
     }

@@ -58,7 +58,18 @@ public abstract class BinaryOperation implements ExpressionNode {
 
     @Override
     public String toString() {
-        return "(" + left.toString() + " " + getOperationSymbol() + " " + right.toString() + ")";
+        StringBuilder sb = new StringBuilder();
+        toString(sb);
+        return sb.toString();
+    }
+
+    @Override
+    public void toString(StringBuilder sb) {
+        sb.append("(");
+        left.toString(sb);
+        sb.append(" ").append(getOperationSymbol()).append(" ");
+        right.toString(sb);
+        sb.append(")");
     }
 
     @Override
