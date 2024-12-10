@@ -1,8 +1,10 @@
 package expression;
 
+import expression.common.Op;
+
 import java.util.Map;
 
-public class Variable implements ExpressionNode, Operand {
+public class Variable implements Operand, ExpressionNode {
     private final String name;
 
     public Variable(String name) {
@@ -16,10 +18,10 @@ public class Variable implements ExpressionNode, Operand {
 
     @Override
     public int evaluate(int x, int y, int z) {
-        return switch (name) {
-            case "x" -> x;
-            case "y" -> y;
-            case "z" -> z;
+        return switch (name.charAt(name.length() - 1)) {
+            case 'x' -> x;
+            case 'y' -> y;
+            case 'z' -> z;
             default -> throw new IllegalArgumentException("Variable " + name + " not found");
         };
     }
@@ -69,5 +71,15 @@ public class Variable implements ExpressionNode, Operand {
             return name.equals(((Variable) obj).name);
         }
         return false;
+    }
+
+    @Override
+    public boolean isOperand() {
+        return Operand.super.isOperand();
+    }
+
+    @Override
+    public int getPriority() {
+        return Operand.super.getPriority();
     }
 }

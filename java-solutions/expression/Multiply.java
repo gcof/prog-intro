@@ -24,7 +24,7 @@ public class Multiply extends BinaryOperation {
 
     @Override
     public int getPriority() {
-        return 2;
+        return 20;
     }
 
     @Override

@@ -3,7 +3,7 @@ package expression;
 import java.awt.datatransfer.FlavorEvent;
 import java.util.Map;
 
-public class Const implements ExpressionNode, Operand {
+public class Const implements Operand, ExpressionNode {
     private final int value;
     private final boolean isFloat;
 
@@ -36,6 +36,11 @@ public class Const implements ExpressionNode, Operand {
     @Override
     public boolean needBrackets(int priority, boolean isLeft, boolean isCommutative, boolean isAssociative) {
         return false;
+    }
+
+    @Override
+    public int getPriority() {
+        return Operand.super.getPriority();
     }
 
     @Override
@@ -75,5 +80,10 @@ public class Const implements ExpressionNode, Operand {
             return value == (((Const) obj).value);
         }
         return false;
+    }
+
+    @Override
+    public boolean isOperand() {
+        return Operand.super.isOperand();
     }
 }

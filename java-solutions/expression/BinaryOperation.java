@@ -35,6 +35,7 @@ public abstract class BinaryOperation implements ExpressionNode {
         return makeOperation(left.evaluate(x, y, z), right.evaluate(x, y, z));
     }
 
+    @Override
     public float evaluateF(Map<String, Float> x) {
         return makeOperation(left.evaluateF(x), right.evaluateF(x));
     }
@@ -97,6 +98,12 @@ public abstract class BinaryOperation implements ExpressionNode {
 
     @Override
     public boolean needBrackets(int priority, boolean isLeft, boolean isCommutative, boolean isAssociative) {
-        return getPriority() < priority || (!isLeft && getPriority() == priority && (!isCommutative || !isAssociative()));
+        return (getPriority() < priority ||
+                (!isLeft && getPriority() == priority && (!isCommutative || !isAssociative())));
+    }
+
+    @Override
+    public boolean isOperand() {
+        return false;
     }
 }

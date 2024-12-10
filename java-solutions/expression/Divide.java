@@ -22,7 +22,7 @@ public class Divide extends BinaryOperation {
 
     @Override
     public int getPriority() {
-        return 2;
+        return 20;
     }
 
     @Override
