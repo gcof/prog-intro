@@ -1,5 +1,7 @@
 package expression.parser;
 
+import expression.exceptions.ExpressionParseException;
+
 import static java.lang.Character.isWhitespace;
 
 public class BaseParser {
@@ -50,6 +52,22 @@ public class BaseParser {
                 take();
             }
             return true;
+        }
+        return false;
+    }
+
+    protected boolean takeIdentifier(final String expected) {
+        String s = peek(expected.length() + 1);
+        if (s.startsWith(expected)) {
+            for (int i = 0; i < expected.length(); i++) {
+                take();
+            }
+            char c = s.charAt(expected.length());
+            if (Character.isWhitespace(c) || c == '(' || c == '-' || c == '!') {
+                return true;
+            } else {
+                throw new ExpressionParseException("Incorrect identifier: " + s);
+            }
         }
         return false;
     }

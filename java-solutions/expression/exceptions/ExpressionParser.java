@@ -36,9 +36,9 @@ public class ExpressionParser implements TripleParser {
             result = parseAddSub();
             while (true) {
                 skipWhitespaces();
-                if (take("gcd")) {
+                if (takeIdentifier("gcd")) {
                     result = new CheckedGcd(result, parseAddSub());
-                } else if (take("lcm")) {
+                } else if (takeIdentifier("lcm")) {
                     result = new CheckedLcm(result, parseAddSub());
                 } else {
                     return result;
@@ -150,9 +150,6 @@ public class ExpressionParser implements TripleParser {
                 takeDigits(sb);
             } else {
                 throw new ConstParseException("Invalid number, digit expected after '-', found " + peek(1));
-            }
-            if (between('a', 'z')) {
-                throw new ConstParseException("Invalid number, letter " + peek(1) + " after digits");
             }
         }
 
