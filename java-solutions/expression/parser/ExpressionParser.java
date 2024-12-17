@@ -2,8 +2,6 @@ package expression.parser;
 
 import expression.*;
 
-import expression.ExpressionNode;
-
 public class ExpressionParser implements TripleParser {
     @Override
     public TripleExpression parse(String expression) {
@@ -99,7 +97,7 @@ public class ExpressionParser implements TripleParser {
             } else {
                 throw error("Invalid expression in multiplier");
             }
-            if(!inRecursion) {
+            if (!inRecursion) {
                 skipWhitespaces();
                 while (take('!')) {
                     result = new FactorialAbs(result);
