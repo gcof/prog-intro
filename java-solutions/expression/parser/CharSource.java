@@ -5,5 +5,6 @@ public interface CharSource {
     char next();
     char peek();
     String peek(int depth);
+    int getPos();
     IllegalArgumentException error(String message);
 }

@@ -56,7 +56,7 @@ public class BaseParser {
 
     protected void expect(final char expected) {
         if (!take(expected)) {
-            throw error("Expected '" + expected + "', found '" + ch + "'");
+            throw error("Expected '" + expected + "', found '" + (ch == END ? ch : "EOF") + "'");
         }
     }
 

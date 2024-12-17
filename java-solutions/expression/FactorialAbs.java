@@ -32,7 +32,7 @@ public class FactorialAbs extends UnaryOperation {
 
     @Override
     public float makeOperation(float operand) {
-        return makeOperation((int) operand);
+        throw new ArithmeticException("Factorial is not defined for float");
     }
 
     @Override

@@ -61,6 +61,7 @@ public abstract class BinaryOperation implements ExpressionNode {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         toString(sb);
+//        System.err.println("String: " + sb.toString());
         return sb.toString();
     }
 
@@ -77,6 +78,7 @@ public abstract class BinaryOperation implements ExpressionNode {
     public String toMiniString() {
         StringBuilder sb = new StringBuilder();
         toMiniString(sb, false);
+//        System.err.println("MiniString: " + sb.toString());
         return sb.toString();
     }
 
@@ -98,8 +100,9 @@ public abstract class BinaryOperation implements ExpressionNode {
 
     @Override
     public boolean needBrackets(int priority, boolean isLeft, boolean isCommutative, boolean isAssociative) {
-        return (getPriority() < priority ||
-                (!isLeft && getPriority() == priority && (!isCommutative || !isAssociative())));
+        int diff = getPriority() - priority;
+        if (diff > 1) return false;
+        return diff < -1 || (diff == 0 ? !isLeft && (!isAssociative() || !isCommutative) : !isLeft);
     }
 
     @Override

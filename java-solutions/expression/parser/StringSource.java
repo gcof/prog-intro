@@ -24,6 +24,11 @@ public class StringSource implements CharSource {
     }
 
     @Override
+    public int getPos() {
+        return pos;
+    }
+
+    @Override
     public String peek(int depth) {
         int i = pos;
         StringBuilder sb = new StringBuilder();
