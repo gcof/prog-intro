@@ -1,9 +1,6 @@
 # Тесты к курсу «Введение в программирование»
 
-[Условия домашних заданий](https://www.kgeorgiy.info/courses/prog-intro/homeworks.html)
-
-[Правила сдачи зачёта](test-rules.md)
-
+[Условия домашних заданий](https://web.archive.org/web/20250127104102/https://www.kgeorgiy.info/courses/prog-intro/homeworks.html)
 
 ## Домашнее задание 15. Вычисление в различных типах
 
